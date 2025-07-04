@@ -1,4 +1,6 @@
 const reservationService = require('../services/reservationService');
+const { sendEmail } = require('../utils/BrevoMailService');
+const reservationTemplate = require('../utils/reservationTemplate');
 
 class ReservationController {
   // Create a new reservation
@@ -7,6 +9,16 @@ class ReservationController {
       const result = await reservationService.createReservation(req.body);
 
       if (result.success) {
+        await sendEmail(
+          result.data.email,
+          'Saveur Reservation Confirmation',
+          reservationTemplate({
+            name: result.data.name,
+            date: result.data.date,
+            time: result.data.time,
+            guests: result.data.guests
+          })
+        )
         return res.status(201).json(result);
       } else {
         return res.status(400).json(result);
